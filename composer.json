@@ -1,0 +1,45 @@
+{
+    "name": "pmochine/laravel-nova-hashids",
+    "description": "♺ Laravel Nova Hashids card. Convert your ids.",
+    "keywords": [
+        "laravel",
+        "nova",
+        "hashids",
+        "hashid",
+        "hash",
+        "ids",
+        "youtube",
+        "bitly",
+        "encrypt",
+        "decrypt",
+        "obfuscate",
+    ],
+    "license": "MIT",
+    "authors": [
+      {
+        "name": "Philipp Mochine",
+        "email": "p@mochine.de"
+      }
+    ],
+    "require": {
+        "php": ">=7.1.0",
+        "vinkla/hashids": "^5.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Pmochine\\LaravelNovaHashids\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Pmochine\\LaravelNovaHashids\\CardServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
