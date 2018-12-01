@@ -1,9 +1,9 @@
 # ♺ Laravel Nova Hashids Card. Convert your ids.
 
 
-[![Packagist](https://img.shields.io/packagist/v/pmochine/laravel-tongue.svg)](https://packagist.org/packages/pmochine/laravel-tongue)
-[![Packagist](https://poser.pugx.org/pmochine/laravel-tongue/d/total.svg)](https://packagist.org/packages/pmochine/laravel-tongue)
-[![Packagist](https://img.shields.io/packagist/l/pmochine/laravel-tongue.svg)](https://packagist.org/packages/pmochine/laravel-tongue)
+[![Packagist](https://img.shields.io/packagist/v/pmochine/laravel-nova-hashids.svg)](https://packagist.org/packages/pmochine/laravel-nova-hashids)
+[![Packagist](https://poser.pugx.org/pmochine/laravel-nova-hashids/d/total.svg)](https://packagist.org/packages/pmochine/laravel-nova-hashids)
+[![Packagist](https://img.shields.io/packagist/l/pmochine/laravel-nova-hashids.svg)](https://packagist.org/packages/pmochine/laravel-nova-hashids)
 
 ![Laravel Nova Hashids](img/card.png)
 
