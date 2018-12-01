@@ -5,7 +5,7 @@
 [![Total Downloads](https://poser.pugx.org/pmochine/laravel-nova-hashids/downloads)](https://packagist.org/packages/pmochine/laravel-nova-hashids)
 [![License](https://poser.pugx.org/pmochine/laravel-nova-hashids/license)](https://packagist.org/packages/pmochine/laravel-nova-hashids)
 
-![Laravel Nova Hashids](https://github.com/pmochine/laravel-nova-hashids/blob/master/img/card.png)
+![Laravel Nova Hashids](https://github.com/pmochine/laravel-nova-hashids/blob/master/img/card.png?raw=true)
 
 **If you want to decode your Hashids, you can do this directly in your dashboard.🎉**
 
