@@ -12,7 +12,7 @@
         "bitly",
         "encrypt",
         "decrypt",
-        "obfuscate",
+        "obfuscate"
     ],
     "license": "MIT",
     "authors": [
