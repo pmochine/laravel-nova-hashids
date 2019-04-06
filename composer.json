@@ -22,8 +22,8 @@
       }
     ],
     "require": {
-        "php": ">=7.1.0",
-        "vinkla/hashids": "^5.1"
+        "php": ">=7.2.0",
+        "vinkla/hashids": "^5.1||^6.0"
     },
     "autoload": {
         "psr-4": {
