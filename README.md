@@ -9,7 +9,7 @@
 
 **If you want to decode your Hashids, you can do this directly in your dashboard.🎉**
 
- >***Prerequisites**: PHP >=7.1.0 and [Hashids by vinkla](https://github.com/vinkla/laravel-hashids)
+ >***Prerequisites**: PHP >=7.2.0 and [Hashids by vinkla](https://github.com/vinkla/laravel-hashids)
 
 ## Installation in 4 Steps*
 
