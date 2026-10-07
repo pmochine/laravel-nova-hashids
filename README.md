@@ -59,6 +59,32 @@ Version 2 of this package is for Nova 3 and Laravel 6 to 8. Version 2 gets no mo
 
 The card shows the other value. If the hashid is not valid for the connection, the card shows an error. If you select a different connection after a conversion, the card converts the model id again.
 
+### Select a connection for the card
+
+Many applications use one Hashids connection for each model. Call `connection()` to set the first connection of the card. You can still select a different connection in the card.
+
+```php
+(new LaravelNovaHashids)->connection('users'),
+```
+
+If the connection does not exist in `config/hashids.php`, the card shows a warning and selects the default connection.
+
+### Show the hashid of a resource
+
+You can add the card to the detail page of a Nova resource. On a detail page, the card converts the id of the resource at the start. Nova gives the id to the card. The card converts only ids that are whole numbers.
+
+```php
+use Laravel\Nova\Http\Requests\NovaRequest;
+use Pmochine\LaravelNovaHashids\LaravelNovaHashids;
+
+public function cards(NovaRequest $request): array
+{
+    return [
+        (new LaravelNovaHashids)->connection('users')->onlyOnDetail(),
+    ];
+}
+```
+
 ## Access
 
 The card routes use Nova's `Authenticate` and `Authorize` middleware. Every user who can open Nova can use the converter. Nova checks this with the `viewNova` gate.

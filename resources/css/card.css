@@ -29,6 +29,10 @@
   margin-top: 0.5rem;
 }
 
+.nova-hashids__warning {
+  margin-bottom: 0.75rem;
+}
+
 .nova-hashids__actions {
   display: flex;
   justify-content: flex-end;

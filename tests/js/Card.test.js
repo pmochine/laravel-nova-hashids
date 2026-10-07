@@ -35,16 +35,21 @@ function deferred() {
 
 let http
 
-async function mountCard(config = { connections: ['main', 'alternative'], default: 'alternative' }) {
+// Nova's __() replaces :placeholders in the key.
+function translate(key, replace = {}) {
+  return Object.entries(replace).reduce((text, [name, value]) => text.replace(`:${name}`, value), key)
+}
+
+async function mountCard(config = { connections: ['main', 'alternative'], default: 'alternative' }, props = {}) {
   if (config) {
     http.get.mockResolvedValue({ data: config })
   }
 
   const wrapper = mount(Card, {
-    props: { card: {} },
+    props: { card: {}, ...props },
     global: {
       components: { LoadingCard, SelectControl },
-      mixins: [{ methods: { __: key => key } }],
+      mixins: [{ methods: { __: translate } }],
     },
   })
 
@@ -243,6 +248,57 @@ describe('Card', () => {
     expect(http.post).toHaveBeenCalledTimes(1)
     expect(wrapper.find('[dusk="hashids-error"]').exists()).toBe(false)
     expect(wrapper.find('[dusk="convert-button"]').element.disabled).toBe(false)
+  })
+
+  it('selects the connection of the card', async () => {
+    const wrapper = await mountCard(undefined, { card: { connection: 'main' } })
+
+    expect(wrapper.find('select').element.value).toBe('main')
+    expect(wrapper.find('[dusk="hashids-connection-warning"]').exists()).toBe(false)
+  })
+
+  it('warns if the connection of the card does not exist', async () => {
+    const wrapper = await mountCard(undefined, { card: { connection: 'users' } })
+
+    expect(wrapper.find('select').element.value).toBe('alternative')
+    expect(wrapper.find('[dusk="hashids-connection-warning"]').text()).toBe(
+      'The connection users does not exist. Check config/hashids.php.'
+    )
+  })
+
+  it('keeps the connection warning after a conversion', async () => {
+    const wrapper = await mountCard(undefined, { card: { connection: 'users' } })
+    http.post.mockResolvedValue({ data: { hashId: 'abc', modelId: '42' } })
+
+    await wrapper.find('[dusk="normalid"]').setValue('42')
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+
+    expect(wrapper.find('[dusk="hashids-connection-warning"]').exists()).toBe(true)
+  })
+
+  it('shows the hashid of the resource on a detail page', async () => {
+    http.post.mockResolvedValue({ data: { hashId: 'abc', modelId: '42' } })
+
+    const wrapper = await mountCard(undefined, { card: { connection: 'main' }, resourceId: 42 })
+
+    expect(http.post).toHaveBeenCalledTimes(1)
+    expect(http.post).toHaveBeenCalledWith(endpoint, { connection: 'main', modelId: '42' })
+    expect(wrapper.find('[dusk="hashid"]').element.value).toBe('abc')
+    expect(wrapper.find('[dusk="normalid"]').element.value).toBe('42')
+  })
+
+  it('does not convert a resource id that is not a whole number', async () => {
+    const wrapper = await mountCard(undefined, { resourceId: '9b1d-uuid' })
+
+    expect(http.post).not.toHaveBeenCalled()
+    expect(wrapper.find('[dusk="normalid"]').element.value).toBe('')
+  })
+
+  it('does not convert the resource id if there are no connections', async () => {
+    await mountCard({ connections: [], default: null }, { resourceId: 42 })
+
+    expect(http.post).not.toHaveBeenCalled()
   })
 
   it('shows a notice if there are no connections', async () => {

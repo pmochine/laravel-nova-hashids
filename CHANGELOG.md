@@ -23,6 +23,8 @@ Version 3 is a rebuild for Laravel Nova 5. It drops old versions of Nova, Larave
 - You can use your own hash algorithm. Bind a class that implements `Pmochine\LaravelNovaHashids\Contracts\Converter`. ([#1](https://github.com/pmochine/laravel-nova-hashids/issues/1))
 - The card shows an error message under the fields. The fields stay usable after an error.
 - You can press Enter to convert.
+- The `connection()` method sets the first connection of the card. If the connection does not exist, the card shows a warning.
+- On a resource detail page, the card converts the id of the resource at the start.
 
 ### Fixed
 

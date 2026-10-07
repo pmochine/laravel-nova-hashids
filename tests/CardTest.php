@@ -16,6 +16,13 @@ class CardTest extends TestCase
         );
     }
 
+    public function test_the_card_can_select_a_connection(): void
+    {
+        $card = (new LaravelNovaHashids)->connection('alternative');
+
+        $this->assertSame('alternative', $card->jsonSerialize()['connection']);
+    }
+
     public function test_nova_loads_the_compiled_assets(): void
     {
         Nova::$scripts = [];

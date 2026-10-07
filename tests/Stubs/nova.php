@@ -45,14 +45,23 @@ namespace Laravel\Nova {
     {
         public $width = '1/3';
 
+        public $meta = [];
+
         abstract public function component();
+
+        public function withMeta(array $meta)
+        {
+            $this->meta = array_merge($this->meta, $meta);
+
+            return $this;
+        }
 
         public function jsonSerialize(): array
         {
-            return [
+            return array_merge([
                 'component' => $this->component(),
                 'width' => $this->width,
-            ];
+            ], $this->meta);
         }
     }
 }

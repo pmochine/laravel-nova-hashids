@@ -8,7 +8,7 @@
         v-model="connection"
         :options="options"
         :aria-label="__('Connection')"
-        size="xs"
+        size="sm"
         dusk="hashids-connection"
       />
     </div>
@@ -22,6 +22,15 @@
     </p>
 
     <form v-else-if="!loading" @submit.prevent="convert">
+      <p
+        v-if="connectionWarning"
+        class="nova-hashids__warning text-xs text-red-500"
+        role="alert"
+        dusk="hashids-connection-warning"
+      >
+        {{ connectionWarning }}
+      </p>
+
       <div class="nova-hashids__fields">
         <input
           :value="hashId"
@@ -96,7 +105,12 @@ export default {
     Button,
   },
 
-  props: ['card'],
+  props: {
+    card: { type: Object, default: () => ({}) },
+
+    // Nova passes the id of the resource only on resource detail pages.
+    resourceId: { type: [String, Number], default: null },
+  },
 
   data: () => ({
     loading: true,
@@ -108,6 +122,7 @@ export default {
     modelId: '',
     error: null,
     errorField: null,
+    connectionWarning: null,
     lastRequest: 0,
   }),
 
@@ -156,7 +171,8 @@ export default {
         .get(endpoint)
         .then(({ data }) => {
           this.connections = data.connections
-          this.connection = data.default
+          this.connection = this.initialConnection(data)
+          this.convertResourceId()
         })
         .catch(() => {
           this.failed = true
@@ -164,6 +180,31 @@ export default {
         .finally(() => {
           this.loading = false
         })
+    },
+
+    initialConnection({ connections, default: fallback }) {
+      const wanted = this.card?.connection
+
+      if (wanted == null || connections.includes(wanted)) {
+        return wanted ?? fallback
+      }
+
+      this.connectionWarning = this.__(
+        'The connection :connection does not exist. Check config/hashids.php.',
+        { connection: wanted }
+      )
+
+      return fallback
+    },
+
+    // On a resource detail page, show the hashid of the resource.
+    convertResourceId() {
+      const id = this.resourceId == null ? '' : String(this.resourceId)
+
+      if (this.connections.length > 0 && /^\d+$/.test(id)) {
+        this.modelId = id
+        this.convert()
+      }
     },
 
     setHashId(value) {
