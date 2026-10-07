@@ -2,71 +2,68 @@
 
 namespace Pmochine\LaravelNovaHashids\Http;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Vinkla\Hashids\Facades\Hashids;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Pmochine\LaravelNovaHashids\Contracts\Converter;
 
 class HashidsConverterController
 {
-	protected $config;
+    public function __construct(protected Converter $converter)
+    {
+    }
 
-	public function __construct()
-	{
-		$this->config = config('hashids', []);
-	}
-	/**
-	 * Gets the required information of the config file.
-	 * 
-	 * @param  Request $request 
-	 * @return json           
-	 */
-	public function index() 
-	{
-		if(empty($this->config)){
-			return response()->json([
-				'status' => 'empty',
-			]);
-		}
+    /**
+     * Get the connections the card can select.
+     */
+    public function index(): JsonResponse
+    {
+        return response()->json([
+            'connections' => $this->converter->connections(),
+            'default' => $this->converter->defaultConnection(),
+        ]);
+    }
 
-		return response()->json([
-			'status' => 'loaded',
-			'default' => $this->config['default'],
-			'selection' => array_keys($this->config['connections'])
-		]);
-	}
+    /**
+     * Convert a model id to a hashid, or a hashid to a model id.
+     *
+     * If the request contains both values, the model id wins.
+     */
+    public function convert(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'connection' => ['required', 'string', Rule::in($this->converter->connections())],
+            'modelId' => ['nullable', 'required_without:hashId', 'regex:/^\d{1,20}$/'],
+            'hashId' => ['nullable', 'required_without:modelId', 'string', 'max:255'],
+        ], [
+            'required_without' => 'Enter a hashid or a model id.',
+            'modelId.regex' => 'The model id must be a positive whole number.',
+        ]);
 
-	/**
-	 * Converts modelId or Hashid
-	 * @param  Request $request 
-	 * @return json           
-	 */
-	public function convert(Request $request) 
-	{
-		$request->validate([
-			'selected' => 'required'
-		]);
+        if (isset($data['modelId'])) {
+            $modelId = (string) $data['modelId'];
+            $hashId = $this->converter->encode($data['connection'], $modelId);
 
-		if(! array_has($this->config, 'connections.'.$request->selected)){
-			return abort(422);
-		}
+            if ($hashId === null) {
+                throw ValidationException::withMessages([
+                    'modelId' => 'The selected connection can not encode this model id.',
+                ]);
+            }
+        } else {
+            $hashId = $data['hashId'];
+            $modelId = $this->converter->decode($data['connection'], $hashId);
 
-		if(is_null($request->modelId) && is_null($request->hashId)){
-			return response()->json([
-				'status' => 'empty',
-			]);
-		}
+            if ($modelId === null) {
+                throw ValidationException::withMessages([
+                    'hashId' => 'This hashid is not valid for the selected connection.',
+                ]);
+            }
+        }
 
-		if(is_null($request->modelId)){
-			return response()->json([
-				'status' => 'modelId',
-				'value' => Hashids::connection($request->selected)
-						  			->decode($request->hashId)[0]
-			]);
-		}
-
-		return response()->json([
-			'status' => 'hashId',
-			'value' => Hashids::connection($request->selected)
-					  			->encode($request->modelId)
-		]);
-	}
+        return response()->json([
+            'hashId' => $hashId,
+            'modelId' => $modelId,
+        ]);
+    }
 }
