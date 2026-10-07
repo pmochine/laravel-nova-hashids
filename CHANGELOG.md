@@ -37,6 +37,7 @@ Version 3 is a rebuild for Laravel Nova 5. It drops old versions of Nova, Larave
 - Large model ids keep all digits. The card sends ids as strings.
 - Leading zeros in a model id no longer change the result. Before, the GMP extension read `042` as an octal number.
 - The card does not show a connection with the name `0`. The Hashids manager uses the default connection for this name.
+- A connection with a wrong configuration no longer causes a server error. On a server error, `Nova.request()` leaves the page. The card now shows a message, and Laravel reports the exception.
 
 ### Changed
 

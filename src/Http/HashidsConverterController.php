@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Pmochine\LaravelNovaHashids\Contracts\Converter;
+use Throwable;
 
 class HashidsConverterController
 {
@@ -45,7 +46,7 @@ class HashidsConverterController
         if (isset($data['modelId'])) {
             // Remove leading zeros. GMP reads "042" as an octal number.
             $modelId = ltrim((string) $data['modelId'], '0') ?: '0';
-            $hashId = $this->converter->encode($data['connection'], $modelId);
+            $hashId = $this->attempt(fn () => $this->converter->encode($data['connection'], $modelId));
 
             if ($hashId === null) {
                 throw ValidationException::withMessages([
@@ -54,7 +55,7 @@ class HashidsConverterController
             }
         } else {
             $hashId = $data['hashId'];
-            $modelId = $this->converter->decode($data['connection'], $hashId);
+            $modelId = $this->attempt(fn () => $this->converter->decode($data['connection'], $hashId));
 
             if ($modelId === null) {
                 throw ValidationException::withMessages([
@@ -67,6 +68,25 @@ class HashidsConverterController
             'hashId' => $hashId,
             'modelId' => $modelId,
         ]);
+    }
+
+    /**
+     * Run a conversion. Report an exception and return it as a validation error.
+     *
+     * Nova.request() leaves the page on a server error, so the card would close.
+     * A connection with a wrong config, for example a length that is not a number, throws.
+     */
+    protected function attempt(Closure $conversion): ?string
+    {
+        try {
+            return $conversion();
+        } catch (Throwable $exception) {
+            report($exception);
+
+            throw ValidationException::withMessages([
+                'connection' => 'The selected connection does not work. Check config/hashids.php.',
+            ]);
+        }
     }
 
     /**

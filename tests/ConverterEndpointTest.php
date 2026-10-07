@@ -2,7 +2,9 @@
 
 namespace Pmochine\LaravelNovaHashids\Tests;
 
+use Illuminate\Support\Facades\Exceptions;
 use PHPUnit\Framework\Attributes\DataProvider;
+use TypeError;
 use Vinkla\Hashids\Facades\Hashids;
 
 class ConverterEndpointTest extends TestCase
@@ -220,6 +222,24 @@ class ConverterEndpointTest extends TestCase
         $this->postJson(self::ENDPOINT, ['connection' => 'main', 'hashId' => $hashId])
             ->assertUnprocessable()
             ->assertJsonValidationErrors('hashId');
+    }
+
+    public function test_it_reports_a_broken_connection_as_a_validation_error(): void
+    {
+        Exceptions::fake();
+
+        // This is the example connection in the default config of vinkla/hashids.
+        config(['hashids.connections.broken' => ['salt' => 'your-salt-string', 'length' => 'your-length-integer']]);
+
+        $this->postJson(self::ENDPOINT, ['connection' => 'broken', 'modelId' => '42'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['connection' => 'The selected connection does not work. Check config/hashids.php.']);
+
+        $this->postJson(self::ENDPOINT, ['connection' => 'broken', 'hashId' => 'abc'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('connection');
+
+        Exceptions::assertReported(TypeError::class);
     }
 
     public function test_it_rejects_an_unknown_connection(): void
