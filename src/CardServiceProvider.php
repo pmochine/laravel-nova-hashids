@@ -29,9 +29,20 @@ class CardServiceProvider extends ServiceProvider
             $this->routes();
         });
 
+        // Messages of the API. The card texts go to Nova below.
+        $this->loadJsonTranslationsFrom(__DIR__.'/../lang');
+
         Nova::serving(function (ServingNova $event) {
             Nova::script('laravel-nova-hashids', __DIR__.'/../dist/js/card.js');
             Nova::style('laravel-nova-hashids', __DIR__.'/../dist/css/card.css');
+
+            $locale = $this->app->getLocale();
+            $translations = __DIR__.'/../resources/lang/'.$locale.'/card.json';
+
+            // The locale is part of a path. Allow only letters, "-" and "_".
+            if (preg_match('/^[A-Za-z_-]+$/', $locale) && is_file($translations)) {
+                Nova::translations($translations);
+            }
         });
     }
 

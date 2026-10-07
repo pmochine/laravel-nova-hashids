@@ -89,6 +89,17 @@ public function cards(NovaRequest $request): array
 }
 ```
 
+## Translations
+
+The card has English and German texts. It uses the locale of your application, `app()->getLocale()`.
+
+To add a different language, add the texts to two files in your application:
+
+- The card texts go to `lang/vendor/nova/{locale}.json`. Nova sends this file to the browser.
+- The error messages of the card API go to `lang/{locale}.json`.
+
+The German files of the package show all keys: [`resources/lang/de/card.json`](resources/lang/de/card.json) and [`lang/de.json`](lang/de.json).
+
 ## Access
 
 The card routes use Nova's `Authenticate` and `Authorize` middleware. Every user who can open Nova can use the converter. Nova checks this with the `viewNova` gate.

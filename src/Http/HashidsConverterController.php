@@ -39,8 +39,8 @@ class HashidsConverterController
             'modelId' => ['nullable', 'required_without:hashId', $this->stringOrInteger(...), 'regex:/^\d{1,20}$/'],
             'hashId' => ['nullable', 'required_without:modelId', 'string', 'max:1000'],
         ], [
-            'required_without' => 'Enter a hashid or a model id.',
-            'modelId.regex' => 'The model id must be a positive whole number.',
+            'required_without' => __('Enter a hashid or a model id.'),
+            'modelId.regex' => __('The model id must be a positive whole number.'),
         ]);
 
         if (isset($data['modelId'])) {
@@ -50,7 +50,7 @@ class HashidsConverterController
 
             if ($hashId === null) {
                 throw ValidationException::withMessages([
-                    'modelId' => 'The selected connection can not encode this model id.',
+                    'modelId' => __('The selected connection can not encode this model id.'),
                 ]);
             }
         } else {
@@ -59,7 +59,7 @@ class HashidsConverterController
 
             if ($modelId === null) {
                 throw ValidationException::withMessages([
-                    'hashId' => 'This hashid is not valid for the selected connection.',
+                    'hashId' => __('This hashid is not valid for the selected connection.'),
                 ]);
             }
         }
@@ -84,7 +84,7 @@ class HashidsConverterController
             report($exception);
 
             throw ValidationException::withMessages([
-                'connection' => 'The selected connection does not work. Check config/hashids.php.',
+                'connection' => __('The selected connection does not work. Check config/hashids.php.'),
             ]);
         }
     }
@@ -95,7 +95,7 @@ class HashidsConverterController
     protected function stringOrInteger(string $attribute, mixed $value, Closure $fail): void
     {
         if (! is_string($value) && ! is_int($value)) {
-            $fail('The model id must be a positive whole number.');
+            $fail(__('The model id must be a positive whole number.'));
         }
     }
 }

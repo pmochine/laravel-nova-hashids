@@ -39,6 +39,18 @@ namespace Laravel\Nova {
         {
             static::$styles[$name] = $path;
         }
+
+        /** @var array<string, string> */
+        public static array $translations = [];
+
+        public static function translations($translations): void
+        {
+            if (is_string($translations)) {
+                $translations = json_decode(file_get_contents($translations), true);
+            }
+
+            static::$translations = array_merge(static::$translations, $translations);
+        }
     }
 
     abstract class Card implements JsonSerializable
