@@ -134,8 +134,14 @@ export default {
 
   watch: {
     connection(value, previous) {
-      if (previous !== null && (this.hashId !== '' || this.modelId !== '')) {
+      if (previous === null) {
+        return
+      }
+
+      if (this.hashId !== '' || this.modelId !== '') {
         this.convert()
+      } else {
+        this.forgetConversions()
       }
     },
   },
@@ -163,12 +169,19 @@ export default {
     setHashId(value) {
       this.hashId = value
       this.modelId = ''
-      this.clearError()
+      this.forgetConversions()
     },
 
     setModelId(value) {
       this.modelId = value
       this.hashId = ''
+      this.forgetConversions()
+    },
+
+    // A running conversion belongs to an older input. Ignore its answer.
+    forgetConversions() {
+      this.lastRequest++
+      this.converting = false
       this.clearError()
     },
 

@@ -179,6 +179,56 @@ describe('Card', () => {
     expect(wrapper.find('[dusk="hashid"]').element.value).toBe('new')
   })
 
+  it('keeps a new input if the answer for an older input arrives', async () => {
+    const wrapper = await mountCard()
+    const answer = deferred()
+    http.post.mockReturnValueOnce(answer.promise)
+
+    await wrapper.find('[dusk="normalid"]').setValue('42')
+    await wrapper.find('form').trigger('submit')
+    await wrapper.find('[dusk="normalid"]').setValue('7')
+
+    answer.resolve({ data: { hashId: 'abc', modelId: '42' } })
+    await flushPromises()
+
+    expect(wrapper.find('[dusk="normalid"]').element.value).toBe('7')
+    expect(wrapper.find('[dusk="hashid"]').element.value).toBe('')
+    expect(wrapper.find('[dusk="convert-button"]').element.disabled).toBe(false)
+  })
+
+  it('ignores the error for an older input', async () => {
+    const wrapper = await mountCard()
+    const answer = deferred()
+    http.post.mockReturnValueOnce(answer.promise.then(error => Promise.reject(error)))
+
+    await wrapper.find('[dusk="hashid"]').setValue('nope')
+    await wrapper.find('form').trigger('submit')
+    await wrapper.find('[dusk="hashid"]').setValue('abc')
+
+    answer.resolve(validationError({ hashId: ['This hashid is not valid for the selected connection.'] }))
+    await flushPromises()
+
+    expect(wrapper.find('[dusk="hashids-error"]').exists()).toBe(false)
+  })
+
+  it('ignores an older answer after you clear the fields and change the connection', async () => {
+    const wrapper = await mountCard()
+    const answer = deferred()
+    http.post.mockReturnValueOnce(answer.promise)
+
+    await wrapper.find('[dusk="normalid"]').setValue('42')
+    await wrapper.find('form').trigger('submit')
+    await wrapper.find('[dusk="normalid"]').setValue('')
+    await wrapper.find('select').setValue('main')
+
+    answer.resolve({ data: { hashId: 'abc', modelId: '42' } })
+    await flushPromises()
+
+    expect(http.post).toHaveBeenCalledTimes(1)
+    expect(wrapper.find('[dusk="hashid"]').element.value).toBe('')
+    expect(wrapper.find('[dusk="normalid"]').element.value).toBe('')
+  })
+
   it('shows a notice if there are no connections', async () => {
     const wrapper = await mountCard({ connections: [], default: null })
 
