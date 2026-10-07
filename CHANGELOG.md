@@ -4,7 +4,7 @@ All notable changes to this package are in this file. The package follows [Seman
 
 ## [Unreleased]
 
-## [3.0.0] - Unreleased
+## [3.0.0] - 2026-10-07
 
 Version 3 is a rebuild for Laravel Nova 5. It drops old versions of Nova, Laravel and PHP. Read the upgrade notes below before you update.
 
@@ -90,7 +90,7 @@ Version 3 is a rebuild for Laravel Nova 5. It drops old versions of Nova, Larave
 
 - First release. Convert hashids to model ids.
 
-[Unreleased]: https://github.com/pmochine/laravel-nova-hashids/compare/2.3.0...HEAD
+[Unreleased]: https://github.com/pmochine/laravel-nova-hashids/compare/3.0.0...HEAD
 [3.0.0]: https://github.com/pmochine/laravel-nova-hashids/compare/2.3.0...3.0.0
 [2.3.0]: https://github.com/pmochine/laravel-nova-hashids/compare/2.2.0...2.3.0
 [2.2.0]: https://github.com/pmochine/laravel-nova-hashids/compare/2.1.0...2.2.0
