@@ -229,6 +229,22 @@ describe('Card', () => {
     expect(wrapper.find('[dusk="normalid"]').element.value).toBe('')
   })
 
+  it('ignores the error of an empty form after the connection changes', async () => {
+    const wrapper = await mountCard()
+    const answer = deferred()
+    http.post.mockReturnValueOnce(answer.promise.then(error => Promise.reject(error)))
+
+    await wrapper.find('form').trigger('submit')
+    await wrapper.find('select').setValue('main')
+
+    answer.resolve(validationError({ modelId: ['Enter a hashid or a model id.'] }))
+    await flushPromises()
+
+    expect(http.post).toHaveBeenCalledTimes(1)
+    expect(wrapper.find('[dusk="hashids-error"]').exists()).toBe(false)
+    expect(wrapper.find('[dusk="convert-button"]').element.disabled).toBe(false)
+  })
+
   it('shows a notice if there are no connections', async () => {
     const wrapper = await mountCard({ connections: [], default: null })
 

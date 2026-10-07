@@ -28,7 +28,8 @@
     },
     "require-dev": {
         "orchestra/testbench": "^10.0|^11.0",
-        "phpunit/phpunit": "^11.5|^12.0"
+        "phpunit/phpunit": "^11.5|^12.0",
+        "sqids/sqids": "^0.5"
     },
     "conflict": {
         "laravel/nova": "<5.0|>=6.0"

@@ -2,6 +2,7 @@
 
 namespace Pmochine\LaravelNovaHashids\Http;
 
+use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -34,7 +35,7 @@ class HashidsConverterController
     {
         $data = $request->validate([
             'connection' => ['required', 'string', Rule::in($this->converter->connections())],
-            'modelId' => ['nullable', 'required_without:hashId', 'regex:/^\d{1,20}$/'],
+            'modelId' => ['nullable', 'required_without:hashId', $this->stringOrInteger(...), 'regex:/^\d{1,20}$/'],
             'hashId' => ['nullable', 'required_without:modelId', 'string', 'max:1000'],
         ], [
             'required_without' => 'Enter a hashid or a model id.',
@@ -66,5 +67,15 @@ class HashidsConverterController
             'hashId' => $hashId,
             'modelId' => $modelId,
         ]);
+    }
+
+    /**
+     * Reject JSON numbers with decimals. PHP would round 10.00000000000001 to "10".
+     */
+    protected function stringOrInteger(string $attribute, mixed $value, Closure $fail): void
+    {
+        if (! is_string($value) && ! is_int($value)) {
+            $fail('The model id must be a positive whole number.');
+        }
     }
 }

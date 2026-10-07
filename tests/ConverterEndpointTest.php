@@ -113,6 +113,25 @@ class ConverterEndpointTest extends TestCase
     }
 
     /**
+     * @return array<string, array{float}>
+     */
+    public static function decimalNumbers(): array
+    {
+        return [
+            'rounds to an integer' => [10.00000000000001],
+            'decimal' => [42.5],
+        ];
+    }
+
+    #[DataProvider('decimalNumbers')]
+    public function test_it_rejects_a_model_id_sent_as_a_decimal_number(float $modelId): void
+    {
+        $this->postJson(self::ENDPOINT, ['connection' => 'main', 'modelId' => $modelId])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['modelId' => 'The model id must be a positive whole number.']);
+    }
+
+    /**
      * @return array<string, array{string, string}>
      */
     public static function modelIdsWithLeadingZeros(): array
@@ -160,13 +179,20 @@ class ConverterEndpointTest extends TestCase
 
     public function test_it_leaves_out_connections_that_the_hashids_manager_can_not_select(): void
     {
-        config(['hashids.connections.0' => ['salt' => 'zero-salt', 'length' => 8]]);
+        config(['hashids.connections' => config('hashids.connections') + [
+            '0' => ['salt' => 'zero-salt', 'length' => 8],
+            '' => ['salt' => 'empty-salt', 'length' => 8],
+        ]]);
 
         $this->getJson(self::ENDPOINT)
             ->assertOk()
             ->assertJsonPath('connections', ['main', 'alternative']);
 
         $this->postJson(self::ENDPOINT, ['connection' => '0', 'modelId' => '42'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('connection');
+
+        $this->postJson(self::ENDPOINT, ['connection' => '', 'modelId' => '42'])
             ->assertUnprocessable()
             ->assertJsonValidationErrors('connection');
     }
