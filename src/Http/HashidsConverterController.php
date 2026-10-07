@@ -35,14 +35,15 @@ class HashidsConverterController
         $data = $request->validate([
             'connection' => ['required', 'string', Rule::in($this->converter->connections())],
             'modelId' => ['nullable', 'required_without:hashId', 'regex:/^\d{1,20}$/'],
-            'hashId' => ['nullable', 'required_without:modelId', 'string', 'max:255'],
+            'hashId' => ['nullable', 'required_without:modelId', 'string', 'max:1000'],
         ], [
             'required_without' => 'Enter a hashid or a model id.',
             'modelId.regex' => 'The model id must be a positive whole number.',
         ]);
 
         if (isset($data['modelId'])) {
-            $modelId = (string) $data['modelId'];
+            // Remove leading zeros. GMP reads "042" as an octal number.
+            $modelId = ltrim((string) $data['modelId'], '0') ?: '0';
             $hashId = $this->converter->encode($data['connection'], $modelId);
 
             if ($hashId === null) {

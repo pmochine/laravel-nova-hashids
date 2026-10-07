@@ -112,6 +112,65 @@ class ConverterEndpointTest extends TestCase
             ->assertJsonPath('modelId', $modelId);
     }
 
+    /**
+     * @return array<string, array{string, string}>
+     */
+    public static function modelIdsWithLeadingZeros(): array
+    {
+        return [
+            'octal digits' => ['00042', '42'],
+            'not octal' => ['08', '8'],
+            'zero' => ['0', '0'],
+            'only zeros' => ['000', '0'],
+        ];
+    }
+
+    #[DataProvider('modelIdsWithLeadingZeros')]
+    public function test_it_removes_leading_zeros_from_the_model_id(string $input, string $modelId): void
+    {
+        $this->postJson(self::ENDPOINT, ['connection' => 'main', 'modelId' => $input])
+            ->assertOk()
+            ->assertExactJson([
+                'hashId' => Hashids::connection('main')->encode((int) $modelId),
+                'modelId' => $modelId,
+            ]);
+    }
+
+    public function test_it_decodes_a_long_hashid(): void
+    {
+        config(['hashids.connections.long' => ['salt' => 'long-salt', 'length' => 256]]);
+
+        $hashId = $this->postJson(self::ENDPOINT, ['connection' => 'long', 'modelId' => '42'])
+            ->assertOk()
+            ->json('hashId');
+
+        $this->assertSame(256, strlen($hashId));
+
+        $this->postJson(self::ENDPOINT, ['connection' => 'long', 'hashId' => $hashId])
+            ->assertOk()
+            ->assertJsonPath('modelId', '42');
+    }
+
+    public function test_it_rejects_a_hashid_with_more_than_1000_characters(): void
+    {
+        $this->postJson(self::ENDPOINT, ['connection' => 'main', 'hashId' => str_repeat('a', 1001)])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('hashId');
+    }
+
+    public function test_it_leaves_out_connections_that_the_hashids_manager_can_not_select(): void
+    {
+        config(['hashids.connections.0' => ['salt' => 'zero-salt', 'length' => 8]]);
+
+        $this->getJson(self::ENDPOINT)
+            ->assertOk()
+            ->assertJsonPath('connections', ['main', 'alternative']);
+
+        $this->postJson(self::ENDPOINT, ['connection' => '0', 'modelId' => '42'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('connection');
+    }
+
     public function test_it_rejects_a_hashid_that_is_not_valid(): void
     {
         $this->postJson(self::ENDPOINT, ['connection' => 'main', 'hashId' => 'not-a-hashid'])

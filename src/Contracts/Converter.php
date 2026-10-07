@@ -17,7 +17,7 @@ interface Converter
     public function defaultConnection(): ?string;
 
     /**
-     * Encode a model id. The id is a string of digits.
+     * Encode a model id. The id is a string of digits without leading zeros.
      *
      * Return null if the id can not be encoded.
      */
@@ -26,6 +26,7 @@ interface Converter
     /**
      * Decode a hashid to one model id, as a string of digits.
      *
+     * The hashid has 1000 characters or less.
      * Return null if the hashid is not valid for the connection.
      */
     public function decode(string $connection, string $hashId): ?string;
