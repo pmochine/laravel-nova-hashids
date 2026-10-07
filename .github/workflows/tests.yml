@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   php:
-    name: PHP ${{ matrix.php }}, Laravel ${{ matrix.laravel }}, ${{ matrix.stability }}
+    name: PHP ${{ matrix.php }}, Laravel ${{ matrix.laravel }}, ${{ matrix.stability }}${{ matrix.math && format(', {0}', matrix.math) || '' }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -24,6 +24,11 @@ jobs:
             testbench: '10'
           - laravel: '13'
             testbench: '11'
+          # Hashids uses GMP if it is loaded. This job tests BCMath without GMP.
+          - php: '8.4'
+            laravel: '13'
+            stability: prefer-stable
+            math: bcmath
         exclude:
           - laravel: '13'
             php: '8.2'
@@ -34,13 +39,16 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: bcmath
+          extensions: ${{ matrix.math == 'bcmath' && 'bcmath, :gmp' || 'bcmath, gmp' }}
           coverage: none
 
       - name: Install dependencies
         run: |
           composer require "laravel/framework:^${{ matrix.laravel }}.0" "orchestra/testbench:^${{ matrix.testbench }}.0" --dev --no-interaction --no-update
           composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
+
+      - name: Show the math extensions
+        run: php -m | grep -iE '^(bcmath|gmp)$'
 
       - name: Run tests
         run: vendor/bin/phpunit

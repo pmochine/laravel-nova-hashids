@@ -88,7 +88,11 @@ The contract has four methods. Model ids are strings of digits without leading z
 | `encode($connection, $modelId)` | The hashid. Return `null` for an id that the algorithm can not encode. |
 | `decode($connection, $hashId)` | One model id. Return `null` for a hashid that is not valid. |
 
-This example uses [Sqids](https://sqids.org/php), the successor of Hashids.
+This example uses [Sqids](https://sqids.org/php), the successor of Hashids. Install Sqids first.
+
+```bash
+composer require sqids/sqids
+```
 
 ```php
 namespace App\Support;
