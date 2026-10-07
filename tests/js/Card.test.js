@@ -60,12 +60,17 @@ async function mountCard(config = { connections: ['main', 'alternative'], defaul
 
 beforeEach(() => {
   http = { get: vi.fn(), post: vi.fn() }
-  globalThis.Nova = { request: () => http }
+  globalThis.Nova = { request: () => http, success: vi.fn(), error: vi.fn() }
 })
 
 afterEach(() => {
   delete globalThis.Nova
+  vi.unstubAllGlobals()
 })
+
+function stubClipboard(clipboard) {
+  vi.stubGlobal('navigator', { ...window.navigator, clipboard })
+}
 
 describe('Card', () => {
   it('selects the default connection', async () => {
@@ -299,6 +304,52 @@ describe('Card', () => {
     await mountCard({ connections: [], default: null }, { resourceId: 42 })
 
     expect(http.post).not.toHaveBeenCalled()
+  })
+
+  it('shows the copy button only if there is a hashid', async () => {
+    const wrapper = await mountCard()
+
+    expect(wrapper.find('[dusk="copy-hashid-button"]').exists()).toBe(false)
+
+    await wrapper.find('[dusk="hashid"]').setValue('abc')
+
+    expect(wrapper.find('[dusk="copy-hashid-button"]').exists()).toBe(true)
+  })
+
+  it('copies the hashid', async () => {
+    const writeText = vi.fn().mockResolvedValue()
+    stubClipboard({ writeText })
+    const wrapper = await mountCard()
+
+    await wrapper.find('[dusk="hashid"]').setValue(' abc ')
+    await wrapper.find('[dusk="copy-hashid-button"]').trigger('click')
+    await flushPromises()
+
+    expect(writeText).toHaveBeenCalledWith('abc')
+    expect(Nova.success).toHaveBeenCalledWith('Copied the hashid.')
+    expect(http.post).not.toHaveBeenCalled()
+  })
+
+  it('shows an error if the browser does not allow copying', async () => {
+    stubClipboard({ writeText: vi.fn().mockRejectedValue(new Error('NotAllowedError')) })
+    const wrapper = await mountCard()
+
+    await wrapper.find('[dusk="hashid"]').setValue('abc')
+    await wrapper.find('[dusk="copy-hashid-button"]').trigger('click')
+    await flushPromises()
+
+    expect(Nova.error).toHaveBeenCalledWith('Your browser did not allow copying.')
+  })
+
+  it('shows an error if the page has no Clipboard API', async () => {
+    stubClipboard(undefined)
+    const wrapper = await mountCard()
+
+    await wrapper.find('[dusk="hashid"]').setValue('abc')
+    await wrapper.find('[dusk="copy-hashid-button"]').trigger('click')
+    await flushPromises()
+
+    expect(Nova.error).toHaveBeenCalledWith('Your browser did not allow copying.')
   })
 
   it('shows a notice if there are no connections', async () => {

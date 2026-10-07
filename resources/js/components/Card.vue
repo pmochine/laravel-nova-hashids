@@ -85,6 +85,15 @@
 
       <div class="nova-hashids__actions">
         <Button
+          v-if="hashId.trim() !== ''"
+          type="button"
+          variant="ghost"
+          :label="__('Copy hashid')"
+          dusk="copy-hashid-button"
+          @click="copyHashId"
+        />
+
+        <Button
           type="submit"
           :label="__('Convert')"
           :loading="converting"
@@ -270,6 +279,18 @@ export default {
       this.error = field
         ? errors[field][0]
         : this.__('The conversion failed. Check the application log.')
+    },
+
+    // The Clipboard API exists only on HTTPS pages and on localhost.
+    copyHashId() {
+      const clipboard = window.navigator.clipboard
+      const copied = clipboard
+        ? clipboard.writeText(this.hashId.trim())
+        : Promise.reject(new Error('The Clipboard API is not available.'))
+
+      return copied
+        .then(() => Nova.success(this.__('Copied the hashid.')))
+        .catch(() => Nova.error(this.__('Your browser did not allow copying.')))
     },
 
     clearError() {

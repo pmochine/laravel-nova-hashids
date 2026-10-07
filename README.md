@@ -59,6 +59,8 @@ Version 2 of this package is for Nova 3 and Laravel 6 to 8. Version 2 gets no mo
 
 The card shows the other value. If the hashid is not valid for the connection, the card shows an error. If you select a different connection after a conversion, the card converts the model id again.
 
+To copy the hashid, click Copy hashid. Browsers allow copying only on HTTPS pages and on `localhost`. On other pages, Nova shows an error message.
+
 ### Select a connection for the card
 
 Many applications use one Hashids connection for each model. Call `connection()` to set the first connection of the card. You can still select a different connection in the card.

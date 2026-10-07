@@ -25,6 +25,7 @@ Version 3 is a rebuild for Laravel Nova 5. It drops old versions of Nova, Larave
 - You can press Enter to convert.
 - The `connection()` method sets the first connection of the card. If the connection does not exist, the card shows a warning.
 - On a resource detail page, the card converts the id of the resource at the start.
+- The Copy hashid button copies the hashid to the clipboard.
 
 ### Fixed
 
