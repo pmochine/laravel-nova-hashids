@@ -36,7 +36,7 @@ Version 2 of this package is for Nova 3 and Laravel 6 to 8. Version 2 gets no mo
    php artisan vendor:publish --provider="Vinkla\Hashids\HashidsServiceProvider"
    ```
 
-3. Set your connections in `config/hashids.php`. Each connection has a salt, a length and an optional alphabet. For details, read the [Laravel Hashids documentation](https://github.com/vinkla/laravel-hashids).
+3. Set your connections in `config/hashids.php`. Each connection has a salt, a length and an optional alphabet. For details, read the [Laravel Hashids documentation](https://github.com/vinkla/laravel-hashids). Do not use the connection name `0`. The Hashids manager uses the default connection for this name, so the card does not show it.
 
 4. Add the card to a dashboard, for example in `app/Nova/Dashboards/Main.php`.
 
@@ -79,7 +79,7 @@ public function register(): void
 }
 ```
 
-The contract has four methods. Model ids are strings of digits, so large ids keep all digits.
+The contract has four methods. Model ids are strings of digits without leading zeros, so large ids keep all digits. The card accepts model ids with up to 20 digits and hashids with up to 1000 characters.
 
 | Method | Returns |
 | --- | --- |
@@ -114,7 +114,10 @@ class SqidsConverter implements Converter
 
     public function encode(string $connection, string $modelId): ?string
     {
-        return $this->sqids->encode([(int) $modelId]);
+        // Sqids encodes PHP integers. This check rejects ids above PHP_INT_MAX.
+        $id = filter_var($modelId, FILTER_VALIDATE_INT);
+
+        return $id === false ? null : $this->sqids->encode([$id]);
     }
 
     public function decode(string $connection, string $hashId): ?string

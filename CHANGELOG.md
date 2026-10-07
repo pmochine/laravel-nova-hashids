@@ -32,6 +32,8 @@ Version 3 is a rebuild for Laravel Nova 5. It drops old versions of Nova, Larave
 - The connection select shows the default connection. Before, it showed the first connection but used the default one.
 - The API accepts only the names of configured connections. Before, a name with a dot, for example `main.salt`, passed the check and caused a server error.
 - Large model ids keep all digits. The card sends ids as strings.
+- Leading zeros in a model id no longer change the result. Before, the GMP extension read `042` as an octal number.
+- The card does not show a connection with the name `0`. The Hashids manager uses the default connection for this name.
 
 ### Changed
 
