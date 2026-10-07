@@ -47,8 +47,16 @@ jobs:
           composer require "laravel/framework:^${{ matrix.laravel }}.0" "orchestra/testbench:^${{ matrix.testbench }}.0" --dev --no-interaction --no-update
           composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
 
-      - name: Show the math extensions
-        run: php -m | grep -iE '^(bcmath|gmp)$'
+      - name: Check the math extensions
+        env:
+          EXPECT_GMP: ${{ matrix.math == 'bcmath' && '0' || '1' }}
+        run: |
+          php -r '
+            $gmp = extension_loaded("gmp");
+            echo "bcmath=", (int) extension_loaded("bcmath"), " gmp=", (int) $gmp, PHP_EOL;
+            if (! extension_loaded("bcmath")) { fwrite(STDERR, "BCMath is not loaded.\n"); exit(1); }
+            if ($gmp !== (getenv("EXPECT_GMP") === "1")) { fwrite(STDERR, "GMP must be loaded only if EXPECT_GMP is 1.\n"); exit(1); }
+          '
 
       - name: Run tests
         run: vendor/bin/phpunit
