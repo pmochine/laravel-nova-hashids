@@ -352,6 +352,57 @@ describe('Card', () => {
     expect(Nova.error).toHaveBeenCalledWith('Your browser did not allow copying.')
   })
 
+  it('hides the old hashid while the card converts for the new connection', async () => {
+    const wrapper = await mountCard()
+    http.post.mockResolvedValueOnce({ data: { hashId: 'abc', modelId: '42' } })
+
+    await wrapper.find('[dusk="normalid"]').setValue('42')
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+
+    const answer = deferred()
+    http.post.mockReturnValueOnce(answer.promise)
+    await wrapper.find('select').setValue('main')
+
+    expect(wrapper.find('[dusk="hashid"]').element.value).toBe('')
+    expect(wrapper.find('[dusk="copy-hashid-button"]').exists()).toBe(false)
+
+    answer.resolve({ data: { hashId: 'xyz', modelId: '42' } })
+    await flushPromises()
+
+    expect(wrapper.find('[dusk="hashid"]').element.value).toBe('xyz')
+    expect(wrapper.find('[dusk="copy-hashid-button"]').exists()).toBe(true)
+  })
+
+  it('does not offer the old hashid if the conversion for the new connection fails', async () => {
+    const wrapper = await mountCard()
+    http.post.mockResolvedValueOnce({ data: { hashId: 'abc', modelId: '42' } })
+
+    await wrapper.find('[dusk="normalid"]').setValue('42')
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+
+    http.post.mockRejectedValueOnce(validationError({ connection: ['The selected connection does not work. Check config/hashids.php.'] }))
+    await wrapper.find('select').setValue('main')
+    await flushPromises()
+
+    expect(wrapper.find('[dusk="hashid"]').element.value).toBe('')
+    expect(wrapper.find('[dusk="copy-hashid-button"]').exists()).toBe(false)
+    expect(wrapper.find('[dusk="hashids-error"]').text()).toBe('The selected connection does not work. Check config/hashids.php.')
+  })
+
+  it('keeps a typed hashid when the connection changes', async () => {
+    const wrapper = await mountCard()
+    http.post.mockResolvedValueOnce({ data: { hashId: 'abc', modelId: '42' } })
+
+    await wrapper.find('[dusk="hashid"]').setValue('abc')
+    await wrapper.find('select').setValue('main')
+    await flushPromises()
+
+    expect(http.post).toHaveBeenCalledWith(endpoint, { connection: 'main', hashId: 'abc' })
+    expect(wrapper.find('[dusk="hashid"]').element.value).toBe('abc')
+  })
+
   it('shows a notice if there are no connections', async () => {
     const wrapper = await mountCard({ connections: [], default: null })
 

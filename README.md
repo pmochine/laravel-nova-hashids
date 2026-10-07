@@ -57,7 +57,7 @@ Version 2 of this package is for Nova 3 and Laravel 6 to 8. Version 2 gets no mo
 2. Enter a hashid or a model id.
 3. Press Enter or click Convert.
 
-The card shows the other value. If the hashid is not valid for the connection, the card shows an error. If you select a different connection after a conversion, the card converts the model id again.
+The card shows the other value. If the hashid is not valid for the connection, the card shows an error. If you select a different connection after a conversion, the card converts the model id again. Until the new hashid arrives, the hashid field stays empty.
 
 If a connection has a wrong configuration, for example a length that is not a number, the card shows an error. Laravel reports the exception to your log.
 

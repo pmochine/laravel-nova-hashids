@@ -162,11 +162,18 @@ export default {
         return
       }
 
-      if (this.hashId !== '' || this.modelId !== '') {
-        this.convert()
-      } else {
+      if (this.hashId === '' && this.modelId === '') {
         this.forgetConversions()
+
+        return
       }
+
+      // The model id wins, so the old hashid belongs to the old connection.
+      if (this.modelId.trim() !== '') {
+        this.hashId = ''
+      }
+
+      this.convert()
     },
   },
 
