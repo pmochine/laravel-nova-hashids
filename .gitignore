@@ -1,10 +1,11 @@
 /.idea
 /vendor
 /node_modules
-package-lock.json
+/dist/mix-manifest.json
 composer.phar
 composer.lock
 phpunit.xml
+.phpunit.cache
 .phpunit.result.cache
 .DS_Store
 Thumbs.db

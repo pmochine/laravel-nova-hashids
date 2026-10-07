@@ -1,0 +1,14 @@
+{
+    "Hashids Converter": "Hashids-Konverter",
+    "Connection": "Verbindung",
+    "Hashid": "Hashid",
+    "Model ID": "Model-ID",
+    "Convert": "Umwandeln",
+    "Copy hashid": "Hashid kopieren",
+    "Copied the hashid.": "Hashid kopiert.",
+    "Your browser did not allow copying.": "Der Browser hat das Kopieren nicht erlaubt.",
+    "The card could not load the Hashids connections.": "Die Karte konnte die Hashids-Verbindungen nicht laden.",
+    "There are no Hashids connections. Check config/hashids.php.": "Es gibt keine Hashids-Verbindungen. Bitte config/hashids.php prüfen.",
+    "The conversion failed. Check the application log.": "Die Umwandlung ist fehlgeschlagen. Bitte das Log der Anwendung prüfen.",
+    "The connection :connection does not exist. Check config/hashids.php.": "Die Verbindung :connection gibt es nicht. Bitte config/hashids.php prüfen."
+}

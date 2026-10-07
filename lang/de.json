@@ -1,0 +1,7 @@
+{
+    "Enter a hashid or a model id.": "Bitte eine Hashid oder eine Model-ID eingeben.",
+    "The model id must be a positive whole number.": "Die Model-ID muss eine positive ganze Zahl sein.",
+    "The selected connection can not encode this model id.": "Die gewählte Verbindung kann diese Model-ID nicht umwandeln.",
+    "This hashid is not valid for the selected connection.": "Diese Hashid passt nicht zur gewählten Verbindung.",
+    "The selected connection does not work. Check config/hashids.php.": "Die gewählte Verbindung funktioniert nicht. Bitte config/hashids.php prüfen."
+}

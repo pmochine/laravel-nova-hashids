@@ -2,71 +2,100 @@
 
 namespace Pmochine\LaravelNovaHashids\Http;
 
+use Closure;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Vinkla\Hashids\Facades\Hashids;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Pmochine\LaravelNovaHashids\Contracts\Converter;
+use Throwable;
 
 class HashidsConverterController
 {
-	protected $config;
+    public function __construct(protected Converter $converter)
+    {
+    }
 
-	public function __construct()
-	{
-		$this->config = config('hashids', []);
-	}
-	/**
-	 * Gets the required information of the config file.
-	 * 
-	 * @param  Request $request 
-	 * @return json           
-	 */
-	public function index() 
-	{
-		if(empty($this->config)){
-			return response()->json([
-				'status' => 'empty',
-			]);
-		}
+    /**
+     * Get the connections the card can select.
+     */
+    public function index(): JsonResponse
+    {
+        return response()->json([
+            'connections' => $this->converter->connections(),
+            'default' => $this->converter->defaultConnection(),
+        ]);
+    }
 
-		return response()->json([
-			'status' => 'loaded',
-			'default' => $this->config['default'],
-			'selection' => array_keys($this->config['connections'])
-		]);
-	}
+    /**
+     * Convert a model id to a hashid, or a hashid to a model id.
+     *
+     * If the request contains both values, the model id wins.
+     */
+    public function convert(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'connection' => ['required', 'string', Rule::in($this->converter->connections())],
+            'modelId' => ['nullable', 'required_without:hashId', $this->stringOrInteger(...), 'regex:/^\d{1,20}$/'],
+            'hashId' => ['nullable', 'required_without:modelId', 'string', 'max:1000'],
+        ], [
+            'required_without' => __('Enter a hashid or a model id.'),
+            'modelId.regex' => __('The model id must be a positive whole number.'),
+        ]);
 
-	/**
-	 * Converts modelId or Hashid
-	 * @param  Request $request 
-	 * @return json           
-	 */
-	public function convert(Request $request) 
-	{
-		$request->validate([
-			'selected' => 'required'
-		]);
+        if (isset($data['modelId'])) {
+            // Remove leading zeros. GMP reads "042" as an octal number.
+            $modelId = ltrim((string) $data['modelId'], '0') ?: '0';
+            $hashId = $this->attempt(fn () => $this->converter->encode($data['connection'], $modelId));
 
-		if(! array_has($this->config, 'connections.'.$request->selected)){
-			return abort(422);
-		}
+            if ($hashId === null) {
+                throw ValidationException::withMessages([
+                    'modelId' => __('The selected connection can not encode this model id.'),
+                ]);
+            }
+        } else {
+            $hashId = $data['hashId'];
+            $modelId = $this->attempt(fn () => $this->converter->decode($data['connection'], $hashId));
 
-		if(is_null($request->modelId) && is_null($request->hashId)){
-			return response()->json([
-				'status' => 'empty',
-			]);
-		}
+            if ($modelId === null) {
+                throw ValidationException::withMessages([
+                    'hashId' => __('This hashid is not valid for the selected connection.'),
+                ]);
+            }
+        }
 
-		if(is_null($request->modelId)){
-			return response()->json([
-				'status' => 'modelId',
-				'value' => Hashids::connection($request->selected)
-						  			->decode($request->hashId)[0]
-			]);
-		}
+        return response()->json([
+            'hashId' => $hashId,
+            'modelId' => $modelId,
+        ]);
+    }
 
-		return response()->json([
-			'status' => 'hashId',
-			'value' => Hashids::connection($request->selected)
-					  			->encode($request->modelId)
-		]);
-	}
+    /**
+     * Run a conversion. Report an exception and return it as a validation error.
+     *
+     * Nova.request() leaves the page on a server error, so the card would close.
+     * A connection with a wrong config, for example a length that is not a number, throws.
+     */
+    protected function attempt(Closure $conversion): ?string
+    {
+        try {
+            return $conversion();
+        } catch (Throwable $exception) {
+            report($exception);
+
+            throw ValidationException::withMessages([
+                'connection' => __('The selected connection does not work. Check config/hashids.php.'),
+            ]);
+        }
+    }
+
+    /**
+     * Reject JSON numbers with decimals. PHP would round 10.00000000000001 to "10".
+     */
+    protected function stringOrInteger(string $attribute, mixed $value, Closure $fail): void
+    {
+        if (! is_string($value) && ! is_int($value)) {
+            $fail(__('The model id must be a positive whole number.'));
+        }
+    }
 }

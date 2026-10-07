@@ -16,18 +16,32 @@
     ],
     "license": "MIT",
     "authors": [
-      {
-        "name": "Philipp Mochine",
-        "email": "mail@philippmochine.com"
-      }
+        {
+            "name": "Philipp Mochine",
+            "email": "mail@philippmochine.com"
+        }
     ],
     "require": {
-        "php": ">=7.2.0",
-        "vinkla/hashids": "^5.1||^6.0||^7.0||^8.0||^9.0"
+        "php": "^8.2",
+        "illuminate/support": "^12.0|^13.0",
+        "vinkla/hashids": "^13.0|^14.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^10.0|^11.0",
+        "phpunit/phpunit": "^11.5|^12.0|^13.0",
+        "sqids/sqids": "^0.5"
+    },
+    "conflict": {
+        "laravel/nova": "<5.0|>=6.0"
     },
     "autoload": {
         "psr-4": {
             "Pmochine\\LaravelNovaHashids\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Pmochine\\LaravelNovaHashids\\Tests\\": "tests/"
         }
     },
     "extra": {
@@ -37,9 +51,11 @@
             ]
         }
     },
+    "scripts": {
+        "test": "phpunit"
+    },
     "config": {
         "sort-packages": true
     },
-    "minimum-stability": "dev",
     "prefer-stable": true
 }

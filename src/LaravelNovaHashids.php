@@ -23,4 +23,13 @@ class LaravelNovaHashids extends Card
         return 'laravel-nova-hashids';
     }
 
+    /**
+     * Select this connection when the card loads, instead of the default connection.
+     *
+     * @return $this
+     */
+    public function connection(string $name)
+    {
+        return $this->withMeta(['connection' => $name]);
+    }
 }
